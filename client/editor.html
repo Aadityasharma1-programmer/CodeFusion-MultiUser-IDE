@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Codefusion | Collaborative Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(19, 19, 19, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .editor-cursor {
+            width: 2px;
+            height: 1.2rem;
+            position: absolute;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .code-glow {
+            text-shadow: 0 0 8px rgba(142, 213, 255, 0.4);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #353534;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8ed5ff;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#ffc2c4",
+                    "surface-dim": "#000000",
+                    "primary-fixed-dim": "#7bd0ff",
+                    "tertiary-container": "#30c88f",
+                    "inverse-primary": "#00668a",
+                    "on-tertiary-container": "#004e34",
+                    "surface": "#000000",
+                    "surface-variant": "#353534",
+                    "surface-tint": "#7bd0ff",
+                    "secondary": "#ffb2b7",
+                    "surface-container-low": "#1c1b1b",
+                    "on-primary-fixed-variant": "#004c69",
+                    "slate-surface": "#1E293B",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "tertiary": "#56e5a9",
+                    "primary-fixed": "#c4e7ff",
+                    "on-primary": "#00354a",
+                    "on-primary-container": "#004965",
+                    "secondary-fixed": "#ffdadb",
+                    "on-primary-fixed": "#001e2c",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "inverse-surface": "#e5e2e1",
+                    "on-secondary-fixed": "#40000d",
+                    "matrix-green": "#10B981",
+                    "void-black": "#000000",
+                    "inverse-on-surface": "#313030",
+                    "surface-container-high": "#2a2a2a",
+                    "tertiary-fixed": "#6ffbbe",
+                    "surface-container": "#201f1f",
+                    "secondary-container": "#b50036",
+                    "primary": "#8ed5ff",
+                    "on-surface-variant": "#bdc8d1",
+                    "on-error": "#690005",
+                    "surface-container-highest": "#353534",
+                    "neon-blue": "#38BDF8",
+                    "on-secondary-fixed-variant": "#92002a",
+                    "error-container": "#93000a",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-bright": "#3a3939",
+                    "primary-container": "#38bdf8",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-error-container": "#ffdad6",
+                    "error": "#ffb4ab",
+                    "outline-variant": "#3e484f",
+                    "on-surface": "#e5e2e1",
+                    "outline": "#87929a",
+                    "cyber-pink": "#F43F5E",
+                    "glass-border": "rgba(255, 255, 255, 0.1)",
+                    "on-secondary": "#67001b",
+                    "background": "#000000",
+                    "on-tertiary": "#003824",
+                    "secondary-fixed-dim": "#ffb2b7",
+                    "on-background": "#e5e2e1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "container-padding": "16px",
+                    "stack-md": "16px",
+                    "panel-gap": "8px",
+                    "gutter": "12px",
+                    "stack-xs": "4px",
+                    "stack-sm": "8px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "code-md": ["JetBrains Mono"],
+                    "code-sm": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["10px", {"lineHeight": "12px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "code-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-sm overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="bg-surface/80 backdrop-blur-md text-primary font-headline-md text-headline-md fixed top-0 w-full border-b border-glass-border shadow-[0_0_8px_rgba(142,213,255,0.2)] flex items-center justify-between px-gutter h-14 z-50">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-primary cursor-pointer active:scale-95" data-icon="terminal">terminal</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Codefusion</h1>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<nav class="flex gap-gutter font-label-caps text-label-caps">
+<a class="text-primary hover:text-neon-blue transition-colors cursor-pointer" href="#">Projects</a>
+<a class="text-on-surface-variant hover:text-neon-blue transition-colors cursor-pointer" href="#">Editor</a>
+<a class="text-on-surface-variant hover:text-neon-blue transition-colors cursor-pointer" href="#">Chat</a>
+</nav>
+<div class="h-6 w-px bg-glass-border"></div>
+<div class="flex items-center gap-stack-sm">
+<div class="w-8 h-8 rounded-full border-2 border-matrix-green p-0.5 overflow-hidden">
+<img alt="Alice" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC799Sdalw1d0YnYg6nYeTnKmQSMYmXtknVXp4yd1qUOdD7MBJKfaZPlKTWTzYypULLRWxsO-BpqBkS8fgBLhSief4-niFEHHs5kuTR69fDTrYvMVt4d-4PXVQ-j17cncYvJuOcutcvwBX4wlC-T5vvmuzih3oNQ2SWLeYF85K9xzlMLOwmcUG-_kUEya2_pkBfsAdc_GESDdhN9b10oPq7hPBKChTx3G16sKnQfsxEq0QD2vwrBHgDeGWP9eeurtcDwIwnvgTbCeKn"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-primary-container p-0.5 overflow-hidden">
+<img alt="Bob" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkStp52SOkc-9I7-eD7C76oMWViA69NQZjGYtI1TFPs7H5ksPguLwGFphYGpfolZBLv3rNf0ZNvjm-RLCYAGDzg5MQEDkK9CYVpwPSCDZgGltvWYMEy_3VZ0622oia4GxGVTAcfEiYa4GFlgwxkj5p9tczJIBBDi4Fi2BM5WD3h2wZpyYDMb_kQ0M6e1O-Nym2EKbMMS53IH5ed_3gM08xf-58FECj0ixR0_rprsRamnh71Yua4YUsy-z_ztC5K2hz1oNXcu3T7TDr"/>
+</div>
+<button class="ml-2 bg-primary text-on-primary px-4 py-1 rounded-full font-label-caps text-label-caps hover:brightness-110 active:scale-95 transition-all">INVITE</button>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer active:scale-95" data-icon="sensors">sensors</span>
+</header>
+<!-- Main Workspace Container -->
+<main class="flex-1 flex mt-14 overflow-hidden">
+<!-- Left Side Navigation (NavigationDrawer) -->
+<aside class="hidden lg:flex flex-col h-full w-64 bg-surface-container-low border-r border-glass-border py-stack-md z-40">
+<div class="px-4 mb-stack-md">
+<div class="flex items-center gap-stack-sm text-primary">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="font-label-caps text-label-caps">EXPLORER</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto font-code-sm text-code-sm">
+<!-- File Tree Item -->
+<div class="group flex items-center gap-2 px-4 py-1.5 hover:bg-surface-bright transition-colors cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="expand_more">expand_more</span>
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="folder_open">folder_open</span>
+<span>src</span>
+</div>
+<div class="pl-8">
+<div class="group flex items-center gap-2 px-4 py-1.5 hover:bg-surface-bright transition-colors cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="expand_more">expand_more</span>
+<span class="material-symbols-outlined text-[18px] text-tertiary" data-icon="folder">folder</span>
+<span>components</span>
+</div>
+<div class="pl-8">
+<div class="group flex items-center gap-2 px-4 py-1.5 bg-primary-container/20 text-primary border-l-2 border-primary cursor-pointer">
+<span class="material-symbols-outlined text-[18px]" data-icon="code">code</span>
+<span>Editor.tsx</span>
+</div>
+<div class="group flex items-center gap-2 px-4 py-1.5 hover:bg-surface-bright transition-colors cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="code">code</span>
+<span>Sidebar.tsx</span>
+</div>
+</div>
+</div>
+<div class="group flex items-center gap-2 px-4 py-1.5 hover:bg-surface-bright transition-colors cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-secondary" data-icon="description">description</span>
+<span>package.json</span>
+</div>
+</div>
+<div class="mt-auto px-4 pt-4 border-t border-glass-border">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container/10 flex items-center justify-center rounded-lg border border-primary/20">
+<span class="material-symbols-outlined text-primary" data-icon="terminal">terminal</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Lead Dev</span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider">codefusion / main</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Center Editor Pane -->
+<section class="flex-1 flex flex-col bg-surface overflow-hidden relative">
+<!-- Tabs Bar -->
+<div class="flex h-10 border-b border-glass-border bg-surface-container-lowest overflow-x-auto">
+<div class="flex items-center gap-2 px-4 bg-surface border-r border-glass-border border-t-2 border-t-primary text-primary font-code-sm text-code-sm cursor-pointer min-w-max">
+<span class="material-symbols-outlined text-[16px]" data-icon="code">code</span>
+<span>Editor.tsx</span>
+<span class="material-symbols-outlined text-[14px] opacity-60 hover:opacity-100" data-icon="close">close</span>
+</div>
+<div class="flex items-center gap-2 px-4 border-r border-glass-border text-on-surface-variant font-code-sm text-code-sm cursor-pointer hover:bg-surface-bright min-w-max">
+<span class="material-symbols-outlined text-[16px]" data-icon="code">code</span>
+<span>Sidebar.tsx</span>
+<span class="material-symbols-outlined text-[14px] opacity-60" data-icon="close">close</span>
+</div>
+</div>
+<!-- Editor Content Area -->
+<div class="flex-1 flex flex-col overflow-hidden">
+<div class="flex flex-1 overflow-auto bg-void-black p-4 font-code-md text-code-md leading-relaxed relative">
+<!-- Line Numbers -->
+<div class="pr-6 text-right text-surface-variant select-none border-r border-glass-border mr-6">
+<div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div><div>13</div>
+</div>
+<!-- Code -->
+<div class="flex-1 text-on-surface-variant whitespace-pre relative">
+<span class="text-cyber-pink">import</span> { useState } <span class="text-cyber-pink">from</span> <span class="text-tertiary">'react'</span>;
+<span class="text-cyber-pink">import</span> { CollaborativeEditor } <span class="text-cyber-pink">from</span> <span class="text-tertiary">'@fusion/core'</span>;
+
+<span class="text-primary">export const</span> <span class="text-neon-blue">EditorInstance</span> = () => {
+    <span class="text-primary">const</span> [code, setCode] = <span class="text-neon-blue">useState</span>(<span class="text-tertiary">''</span>);
+
+    <span class="text-on-surface-variant/40">// Collaborative hooks enabled</span>
+<span class="text-primary">return</span> (
+        <<span class="text-cyber-pink">div</span> <span class="text-primary">className</span>=<span class="text-tertiary">"editor-container"</span>>
+            <<span class="text-cyber-pink">CollaborativeEditor</span>
+<span class="text-primary">value</span>={code}
+                <span class="text-primary">onChange</span>={setCode}
+                <span class="text-primary">provider</span>=<span class="text-tertiary">"ws://fusion.ai"</span>
+            />
+        </<span class="text-cyber-pink">div</span>>
+    );
+};
+                        
+                        <!-- Remote Cursor: Alice -->
+<div class="editor-cursor bg-matrix-green" style="top: 154px; left: 160px;">
+<div class="absolute -top-5 left-0 bg-matrix-green text-on-tertiary px-1 text-[10px] rounded-sm font-bold shadow-lg">Alice</div>
+</div>
+<!-- Remote Cursor: Bob -->
+<div class="editor-cursor bg-primary-container" style="top: 110px; left: 320px;">
+<div class="absolute -top-5 left-0 bg-primary-container text-on-primary px-1 text-[10px] rounded-sm font-bold shadow-lg">Bob</div>
+</div>
+</div>
+<!-- AI Suggestion Card (Floating Glass) -->
+<div class="absolute bottom-10 right-10 w-72 glass-panel p-4 rounded-xl border-cyber-pink/50 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse">
+<div class="flex justify-between items-start mb-2">
+<span class="text-cyber-pink font-label-caps text-label-caps flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="auto_awesome">auto_awesome</span>
+                                AI SUGGESTION
+                            </span>
+<span class="material-symbols-outlined text-cyber-pink text-[14px]" data-icon="sparkles">spark</span>
+</div>
+<p class="text-body-sm text-on-surface mb-3">Optimize this component by memoizing the callback function to prevent unnecessary re-renders.</p>
+<div class="flex gap-2">
+<button class="flex-1 py-1 text-[10px] font-bold bg-cyber-pink text-white rounded-lg hover:brightness-110">APPLY</button>
+<button class="flex-1 py-1 text-[10px] font-bold border border-glass-border text-on-surface-variant rounded-lg hover:bg-white/10">DISMISS</button>
+</div>
+</div>
+</div>
+<!-- Bottom Terminal Pane -->
+<div class="h-48 bg-void-black border-t border-glass-border flex flex-col font-code-sm">
+<div class="flex items-center justify-between px-4 h-8 bg-surface-container-low border-b border-glass-border">
+<div class="flex items-center gap-4">
+<span class="text-on-surface-variant font-label-caps text-label-caps border-b-2 border-primary h-full flex items-center px-2">TERMINAL</span>
+<span class="text-on-surface-variant/40 font-label-caps text-label-caps h-full flex items-center px-2 hover:text-on-surface cursor-pointer">DEBUG CONSOLE</span>
+<span class="text-on-surface-variant/40 font-label-caps text-label-caps h-full flex items-center px-2 hover:text-on-surface cursor-pointer">OUTPUT</span>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer" data-icon="add">add</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer" data-icon="keyboard_arrow_up">keyboard_arrow_up</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant cursor-pointer" data-icon="close">close</span>
+</div>
+</div>
+<div class="flex-1 p-4 text-code-sm overflow-y-auto">
+<div class="flex gap-2 mb-1">
+<span class="text-matrix-green">✓</span>
+<span class="text-on-surface-variant">Compiled successfully in 432ms.</span>
+</div>
+<div class="flex gap-2 mb-1">
+<span class="text-primary">i</span>
+<span class="text-on-surface-variant">Server running at <span class="underline text-neon-blue">http://localhost:3000</span></span>
+</div>
+<div class="flex gap-2 mb-1">
+<span class="text-cyber-pink">!</span>
+<span class="text-cyber-pink">Warning:</span>
+<span class="text-on-surface-variant">Critical dependency: the request of a dependency is an expression</span>
+</div>
+<div class="flex gap-2">
+<span class="text-matrix-green">λ</span>
+<span class="text-on-surface font-bold animate-pulse">_</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right AI Chat Pane -->
+<aside class="hidden xl:flex flex-col w-80 bg-surface-container border-l border-glass-border z-40">
+<div class="p-4 border-b border-glass-border flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-cyber-pink" data-icon="forum">forum</span>
+<span class="font-headline-md text-headline-md text-on-surface">Fusion AI</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-stack-md">
+<!-- AI Message -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-[10px] text-cyber-pink font-bold">
+<span class="material-symbols-outlined text-[14px]" data-icon="bolt">bolt</span>
+                        AI ASSISTANT
+                    </div>
+<div class="glass-panel p-3 rounded-xl rounded-tl-none text-body-sm text-on-surface border-cyber-pink/20">
+                        Hello! I've scanned your current file. Would you like me to help implement the state management for the collaborative provider?
+                    </div>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end gap-2">
+<div class="flex items-center gap-2 text-[10px] text-primary font-bold">
+                        YOU
+                        <span class="material-symbols-outlined text-[14px]" data-icon="person">person</span>
+</div>
+<div class="bg-primary/10 border border-primary/20 p-3 rounded-xl rounded-tr-none text-body-sm text-on-surface">
+                        Yes, please. Also, show me how to handle disconnection events.
+                    </div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low border-t border-glass-border">
+<div class="relative">
+<textarea class="w-full bg-void-black border border-glass-border rounded-xl p-3 pr-12 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none h-20" placeholder="Ask Fusion AI..."></textarea>
+<button class="absolute bottom-3 right-3 w-8 h-8 bg-primary text-on-primary rounded-lg flex items-center justify-center hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="send">send</span>
+</button>
+</div>
+<div class="mt-2 flex gap-2">
+<div class="px-2 py-0.5 bg-surface-container-highest rounded text-[10px] text-on-surface-variant border border-glass-border flex items-center gap-1 cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[12px]" data-icon="bug_report">bug_report</span> Fix Bugs
+                    </div>
+<div class="px-2 py-0.5 bg-surface-container-highest rounded text-[10px] text-on-surface-variant border border-glass-border flex items-center gap-1 cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[12px]" data-icon="auto_awesome">auto_awesome</span> Refactor
+                    </div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="md:hidden bg-surface-container/90 backdrop-blur-md text-primary font-label-caps text-label-caps fixed bottom-0 w-full rounded-t-xl border-t border-glass-border flex justify-around items-center h-16 px-4 z-50">
+<div class="flex flex-col items-center justify-center text-primary drop-shadow-[0_0_5px_#8ed5ff]">
+<span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+<span>Projects</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="code">code</span>
+<span>Editor</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span>Chat</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span>Profile</span>
+</div>
+</nav>
+<!-- Global Visual FX -->
+<div class="fixed top-0 left-0 w-full h-1 pointer-events-none z-[100] bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-pulse"></div>
+<script>
+        // Interactive Micro-interactions
+        document.querySelectorAll('.material-symbols-outlined').forEach(icon => {
+            icon.addEventListener('mouseenter', () => {
+                icon.style.filter = 'drop-shadow(0 0 4px currentColor)';
+            });
+            icon.addEventListener('mouseleave', () => {
+                icon.style.filter = 'none';
+            });
+        });
+
+        // Simple typing effect for terminal cursor
+        setInterval(() => {
+            const cursor = document.querySelector('.animate-pulse');
+            if(cursor) cursor.classList.toggle('opacity-0');
+        }, 500);
+    </script>
+</body></html>
